@@ -93,4 +93,23 @@ def windowlized(df, cols, val_date, test_date, window,
     return (X_train, y_train), (X_val, y_val), (X_test, y_test), (scaler_X, scaler_y)
 
 
+def make_weight_avg(df, selected_cols, date_max, name = 'adjusted_avg_factors',
+target_date_col='target_date'):
+  df_copy = df.copy()
+  df_copy = pd.DataFrame(df_copy[df_copy[target_date_col] < date_max]).reset_index()
+  all_min_values = dict(df_copy.min())
+  all_max_values = dict(df_copy.max())
+
+  min_values = {k:all_min_values[k] for k in selected_cols}
+  max_values = {k:all_max_values[k] for k in selected_cols}
+
+  df_temp = df[selected_cols].copy()
+  for col in selected_cols:
+    df_temp[col] = (df_temp[col] - min_values[col])/(max_values[col] - min_values[col])
+  df_temp['adjusted_avg_factors'] = df_temp[selected_cols].mean(axis=1)
+  df[name] = df_temp['adjusted_avg_factors']
+
+  return df
+
+
   
